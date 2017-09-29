@@ -1,9 +1,10 @@
 module Spree
   class Referral < Spree::Base
     belongs_to :user, class_name: Spree.user_class.to_s
-    has_many :referred_records
+    has_many :referred_records, class_name: 'Spree::ReferredRecord'
 
-    validates_presence_of :user_id, :code
+    validates :user_id, presence: true
+    validates :code, presence: true
 
     before_validation :attach_code, on: :create
 
@@ -19,13 +20,12 @@ module Spree
       referred_records_with_user_orders.select{|u| post_referral_order?(u) }.collect(&:user)
     end
 
-    protected
-      def attach_code
-        self.code = loop do
-          code =  (0...8).map { (65 + rand(26)).chr }.join
-          break code unless Referral.exists?(code: code)
-        end
+    def attach_code
+      self.code = loop do
+        code =  (0...8).map { (65 + rand(26)).chr }.join
+        break code unless Referral.exists?(code: code)
       end
+    end
 
    private
 
